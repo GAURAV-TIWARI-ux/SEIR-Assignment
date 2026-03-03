@@ -1,6 +1,7 @@
-import re
+import sys
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common import options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -8,9 +9,8 @@ from selenium.webdriver.support import expected_conditions as EC
 def get_page_data(url):
     options = Options()
     options.add_argument("--headless")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--no-sandbox")
-
+    options.add_argument("--disable-blink-features=AutomationControlled")
+    options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64)")
     driver = webdriver.Chrome(options=options)
     driver.get(url)
 
@@ -19,48 +19,40 @@ def get_page_data(url):
     )
 
     title = driver.title
-
-    body_element = driver.find_element(By.TAG_NAME, "body")
-    body_text = body_element.text
+    body_text = driver.find_element(By.TAG_NAME, "body").text
 
     links = driver.find_elements(By.TAG_NAME, "a")
     url_list = []
+
     for link in links:
         href = link.get_attribute("href")
         if href:
             url_list.append(href)
 
     driver.quit()
+    return title, body_text, url_list
+
 
 def main():
-    url1 = input("Enter URL 1: ").strip()
-    url2 = input("Enter URL 2: ").strip()
+    if len(sys.argv) != 2:
+        print("Usage: python beautiful.py <URL>")
+        sys.exit(1)
 
-    print("\nProcessing URL 1...\n")
-    title1, body1, links1 = get_page_data(url1)
+    url = sys.argv[1]
+    print("\nProcessing...\n")
 
-    print("TITLE:")
-    print(title1)
-    print("\nBODY:")
-    print(body1)
-    print("\nLINKS:")
-    for link in links1:
-        print(link)
-
-    print("\nProcessing URL 2...\n")
-    title2, body2, links2 = get_page_data(url2)
+    title, body, links = get_page_data(url)
 
     print("TITLE:")
-    print(title2)
+    print(title)
 
     print("\nBODY:")
-    print(body2)
+    print(body)
 
     print("\nLINKS:")
-    for link in links2:
+    for link in links:
         print(link)
 
-    return title, body_text, url_list
 
 if __name__ == "__main__":
     main()
